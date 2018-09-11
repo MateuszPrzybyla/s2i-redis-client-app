@@ -1,25 +1,27 @@
 package com.mateuszprzybyla.playground.openshift.redis;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.autoconfigure.data.redis.RedisProperties;
 import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.context.annotation.Bean;
+import org.springframework.data.redis.cache.RedisCacheConfiguration;
+import org.springframework.data.redis.cache.RedisCacheManager;
 import org.springframework.data.redis.connection.RedisConnectionFactory;
 import org.springframework.data.redis.connection.RedisPassword;
 import org.springframework.data.redis.connection.RedisStandaloneConfiguration;
 import org.springframework.data.redis.connection.jedis.JedisConnectionFactory;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.repository.configuration.EnableRedisRepositories;
+import org.springframework.scheduling.annotation.EnableScheduling;
+
+import java.time.Duration;
 
 @SpringBootApplication
 @EnableRedisRepositories
+@EnableScheduling
 public class Application {
-
-    private static final Logger LOGGER = LoggerFactory.getLogger(Application.class);
 
     @Bean
     public RedisConnectionFactory redisConnectionFactory(@Autowired RedisProperties redisProperties) {
@@ -36,12 +38,21 @@ public class Application {
         return redisTemplate;
     }
 
+    @Bean
+    public RedisCacheManager cacheManager(@Autowired RedisProperties redisProperties) {
+        RedisCacheConfiguration cacheConfiguration = RedisCacheConfiguration.defaultCacheConfig()
+                .entryTtl(Duration.ofSeconds(15));
+        return RedisCacheManager.builder(redisConnectionFactory(redisProperties))
+                .cacheDefaults(cacheConfiguration)
+                .build();
+    }
+
+
     public static void main(String[] args) {
         ConfigurableApplicationContext context = SpringApplication.run(Application.class, args);
 
         PersonCacheDao personCacheDao = context.getBean(PersonCacheDao.class);
         personCacheDao.save(new Person("Mateusz", 26, "Poland"));
 
-        LOGGER.info("Retrieved a person from the cache: {}", personCacheDao.findById("Mateusz"));
     }
 }
