@@ -1,5 +1,7 @@
 package com.mateuszprzybyla.playground.openshift.redis;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
@@ -16,6 +18,8 @@ import org.springframework.data.redis.repository.configuration.EnableRedisReposi
 @SpringBootApplication
 @EnableRedisRepositories
 public class Application {
+
+    private static final Logger LOGGER = LoggerFactory.getLogger(Application.class);
 
     @Bean
     public RedisConnectionFactory redisConnectionFactory(@Autowired RedisProperties redisProperties) {
@@ -38,6 +42,6 @@ public class Application {
         PersonCacheDao personCacheDao = context.getBean(PersonCacheDao.class);
         personCacheDao.save(new Person("Mateusz", 26, "Poland"));
 
-        System.out.println(personCacheDao.findById("Mateusz"));
+        LOGGER.info("Retrieved a person from the cache: {}", personCacheDao.findById("Mateusz"));
     }
 }
