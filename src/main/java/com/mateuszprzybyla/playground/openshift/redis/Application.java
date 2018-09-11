@@ -6,8 +6,6 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.autoconfigure.data.redis.RedisProperties;
 import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.context.annotation.Bean;
-import org.springframework.data.redis.cache.RedisCacheConfiguration;
-import org.springframework.data.redis.cache.RedisCacheManager;
 import org.springframework.data.redis.connection.RedisConnectionFactory;
 import org.springframework.data.redis.connection.RedisPassword;
 import org.springframework.data.redis.connection.RedisStandaloneConfiguration;
@@ -15,8 +13,6 @@ import org.springframework.data.redis.connection.jedis.JedisConnectionFactory;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.repository.configuration.EnableRedisRepositories;
 import org.springframework.scheduling.annotation.EnableScheduling;
-
-import java.time.Duration;
 
 @SpringBootApplication
 @EnableRedisRepositories
@@ -37,16 +33,6 @@ public class Application {
         redisTemplate.setConnectionFactory(redisConnectionFactory(redisProperties));
         return redisTemplate;
     }
-
-    @Bean
-    public RedisCacheManager cacheManager(@Autowired RedisProperties redisProperties) {
-        RedisCacheConfiguration cacheConfiguration = RedisCacheConfiguration.defaultCacheConfig()
-                .entryTtl(Duration.ofSeconds(15));
-        return RedisCacheManager.builder(redisConnectionFactory(redisProperties))
-                .cacheDefaults(cacheConfiguration)
-                .build();
-    }
-
 
     public static void main(String[] args) {
         ConfigurableApplicationContext context = SpringApplication.run(Application.class, args);
